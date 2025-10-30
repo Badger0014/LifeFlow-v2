@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life Dashboard Pro</title>
+    <title>LifeFlow</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* --- 1. CORE & THEME VARIABLES --- */
@@ -198,6 +198,8 @@
             padding: 8px 10px;
             font-size: 0.8em;
             gap: 4px;
+            flex-basis: 0; /* Distribute 5 items evenly */
+            flex-grow: 1;
         }
         .bottom-nav .nav-link.active { background-color: var(--color-bg-tertiary); border-radius: 8px; }
         .bottom-nav .nav-link span { display: block; }
@@ -279,13 +281,17 @@
             font-weight: bold;
             font-size: 1rem;
             width: 100%;
-            transition: background-color 0.2s ease, transform 0.2s ease;
+            transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
         }
         button:hover {
             background-color: var(--color-accent-hover);
         }
         button:active {
             transform: scale(0.98);
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
         button.btn-danger { background-color: var(--color-danger); }
         button.btn-danger:hover { background-color: #c0392b; }
@@ -404,6 +410,31 @@
             text-align: right;
             margin-bottom: 20px;
         }
+
+        /* == AI INSIGHTS == */
+        .ai-card {
+            background-color: var(--color-bg-tertiary);
+            border-left: 5px solid var(--color-accent);
+            margin-top: 25px;
+            animation: fadeIn 0.5s ease;
+        }
+        .ai-card h3 {
+            color: var(--color-accent);
+            margin-bottom: 10px;
+        }
+        #generate-insight-btn i {
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+        }
+        /* Use Font Awesome's spin animation */
+        #generate-insight-btn i.fa-spin {
+            animation: fa-spin 1s linear infinite;
+        }
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
 
         /* == LIST STYLES (Tasks, Transactions, Notes) == */
         .list-group {
@@ -624,17 +655,18 @@
         
         <nav class="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-rocket"></i> Manager
+                <i class="fas fa-wave-pulse"></i> LifeFlow
             </div>
             <a class="nav-link" data-tab="Home" onclick="showTab('Home')"><i class="fas fa-home"></i><span>Home</span></a>
             <a class="nav-link" data-tab="Expenses" onclick="showTab('Expenses')"><i class="fas fa-wallet"></i><span>Expenses</span></a>
+            <a class="nav-link" data-tab="Insights" onclick="showTab('Insights')"><i class="fas fa-wand-magic-sparkles"></i><span>Insights</span></a>
             <a class="nav-link" data-tab="Tasks" onclick="showTab('Tasks')"><i class="fas fa-list-check"></i><span>Tasks</span></a>
             <a class="nav-link" data-tab="Notes" onclick="showTab('Notes')"><i class="fas fa-book"></i><span>Notes</span></a>
         </nav>
 
         <main>
             <header>
-                <h1><i class="fas fa-rocket"></i> Life Manager</h1> <div class="header-controls">
+                <h1><i class="fas fa-wave-pulse"></i> LifeFlow</h1> <div class="header-controls">
                     <div class="currency-selector">
                         <select id="currency-select" onchange="updateCurrencySymbol()">
                             <option value="$">USD ($)</option>
@@ -721,6 +753,21 @@
                     </div>
                 </div>
 
+                <div id="Insights" class="tab-content">
+                    <h1><i class="fas fa-wand-magic-sparkles"></i> Your AI Assistant</h1>
+                    <p>Get personalized insights based on your tasks, expenses, and notes. This assistant runs in your browser and analyzes your local data.</p>
+                    
+                    <button id="generate-insight-btn" onclick="generateInsight()">
+                        <i class="fas fa-sync-alt"></i>
+                        <span> Generate New Insight</span>
+                    </button>
+
+                    <div class="card ai-card" id="ai-output" style="display: none;">
+                        <h3 id="ai-title">Here's a thought...</h3>
+                        <p id="ai-body" style="margin-bottom: 0;">Your insight will appear here.</p>
+                    </div>
+                </div>
+
                 <div id="Tasks" class="tab-content">
                     <div class="card">
                         <h2>📚 To-Do & Study Reminders</h2>
@@ -760,6 +807,7 @@
         <nav class="bottom-nav">
             <a class="nav-link" data-tab="Home" onclick="showTab('Home')"><i class="fas fa-home"></i><span>Home</span></a>
             <a class="nav-link" data-tab="Expenses" onclick="showTab('Expenses')"><i class="fas fa-wallet"></i><span>Expenses</span></a>
+            <a class="nav-link" data-tab="Insights" onclick="showTab('Insights')"><i class="fas fa-wand-magic-sparkles"></i><span>Insights</span></a>
             <a class="nav-link" data-tab="Tasks" onclick="showTab('Tasks')"><i class="fas fa-list-check"></i><span>Tasks</span></a>
             <a class="nav-link" data-tab="Notes" onclick="showTab('Notes')"><i class="fas fa-book"></i><span>Notes</span></a>
         </nav>
@@ -815,6 +863,12 @@
         // Task Progress
         const taskProgress = document.getElementById('task-progress');
         const taskProgressText = document.getElementById('task-progress-text');
+
+        // AI Insights Elements (NEW)
+        const generateInsightBtn = document.getElementById('generate-insight-btn');
+        const aiOutput = document.getElementById('ai-output');
+        const aiTitle = document.getElementById('ai-title');
+        const aiBody = document.getElementById('ai-body');
 
 
         // ===================================
@@ -905,7 +959,6 @@
             homeTaskCount.textContent = incompleteTasks.length;
 
             // --- 2. Balance ---
-            // (This is handled by calculateBalance() which is called by renderTransactions())
             const totalBalance = transactions.reduce((acc, trans) => acc + trans.amount, 0);
             const formattedBalance = formatCurrency(totalBalance);
             homeBalanceDisplay.textContent = formattedBalance;
@@ -961,9 +1014,127 @@
                 quickNotesTextarea.value = '';
             }
         }
+        
+        // ===================================
+        // 7. AI INSIGHTS LOGIC (NEW)
+        // ===================================
+        function generateInsight() {
+            // 1. Show loading state
+            aiOutput.style.display = 'none';
+            generateInsightBtn.disabled = true;
+            const btnIcon = generateInsightBtn.querySelector('i');
+            btnIcon.classList.add('fa-spin');
+            generateInsightBtn.querySelector('span').textContent = ' Thinking...';
+
+            // 2. Simulate "thinking"
+            setTimeout(() => {
+                // 3. Get data
+                const incompleteTasks = tasks.filter(t => !t.completed);
+                const totalBalance = transactions.reduce((acc, trans) => acc + trans.amount, 0);
+                const now = new Date();
+                const hour = now.getHours();
+
+                let insights = []; // Array to hold possible insights
+
+                // --- Rule 1: Time-based Insights ---
+                if (hour < 12) {
+                    insights.push({
+                        title: "Good Morning!",
+                        body: "A new day. What's your #1 priority? Getting it done first (Eat the Frog) can make the whole day feel productive."
+                    });
+                }
+                if (hour > 20) {
+                    insights.push({
+                        title: "Winding Down...",
+                        body: "It's getting late. A good time to review your day's notes and set up your tasks for tomorrow for a fresh start."
+                    });
+                }
+
+                // --- Rule 2: Task-based Insights ---
+                if (incompleteTasks.length === 0 && tasks.length > 0) {
+                    insights.push({
+                        title: "Tasks Cleared!",
+                        body: "You've completed all your tasks. Amazing work! Maybe it's a good time to relax or plan your next set of goals in the Notes tab."
+                    });
+                }
+                if (incompleteTasks.length > 5) {
+                    insights.push({
+                        title: "Feeling Overwhelmed?",
+                        body: `You have ${incompleteTasks.length} tasks open. Don't worry, just focus on one. Which one will make the biggest impact? Start there.`
+                    });
+                }
+                if (tasks.length === 0) {
+                    insights.push({
+                        title: "A Fresh Start",
+                        body: "Your task list is empty. What's one thing you want to accomplish today? Add it to the Tasks tab!"
+                    });
+                }
+
+                // --- Rule 3: Finance-based Insights ---
+                if (totalBalance < 100 && totalBalance > 0) {
+                    insights.push({
+                        title: "Finance Check-in",
+                        body: `Your balance is at ${formatCurrency(totalBalance)}. It might be a good time to review recent expenses to stay on track.`
+                    });
+                }
+                if (totalBalance < 0) {
+                        insights.push({
+                        title: "Balance Alert",
+                        body: `Your balance is currently ${formatCurrency(totalBalance)}. Let's check the Expenses tab to see where we can cut back.`
+                    });
+                }
+                const recentExpenses = transactions.filter(t => t.amount < 0 && (now.getTime() - t.date) < (3 * 24 * 60 * 60 * 1000));
+                if (recentExpenses.length > 5) {
+                    insights.push({
+                        title: "Expense Review",
+                        body: `I see ${recentExpenses.length} expenses in the last 3 days. Small purchases can add up! A quick review might be helpful.`
+                    });
+                }
+
+                // --- Rule 4: Notes-based Insights ---
+                if (notes.length > 0) {
+                    const lastNote = notes[notes.length - 1];
+                    // If last note was over 7 days ago
+                    if ((now.getTime() - lastNote.date) > (7 * 24 * 60 * 60 * 1000)) {
+                            insights.push({
+                            title: "Journal Check-in",
+                            body: "It's been over a week since your last note. Taking a few minutes to write down your thoughts can be a great stress reliever."
+                        });
+                    }
+                }
+                if (notes.length === 0) {
+                        insights.push({
+                        title: "Capture Your Thoughts",
+                        body: "The Notes tab is empty. Try writing a journal entry or just 'brain dumping' your ideas. You might be surprised what you come up with!"
+                    });
+                }
+
+                // --- Default Insight ---
+                if (insights.length === 0) {
+                    insights.push({
+                        title: "All Quiet",
+                        body: "Everything looks stable. Keep logging your tasks, notes, and expenses to get more personalized insights!"
+                    });
+                }
+
+                // 4. Pick a random insight from the list
+                const selectedInsight = insights[Math.floor(Math.random() * insights.length)];
+
+                // 5. Display the result
+                aiTitle.textContent = selectedInsight.title;
+                aiBody.textContent = selectedInsight.body;
+
+                aiOutput.style.display = 'block';
+                generateInsightBtn.disabled = false;
+                btnIcon.classList.remove('fa-spin');
+                generateInsightBtn.querySelector('span').textContent = ' Generate New Insight';
+
+            }, 1500); // Simulate 1.5 second "thinking" time
+        }
+
 
         // ===================================
-        // 7. MULTIPLE NOTES & MODAL LOGIC
+        // 8. MULTIPLE NOTES & MODAL LOGIC
         // ===================================
         function renderNotes() {
             notesList.innerHTML = '';
@@ -1044,7 +1215,7 @@
         }
 
         // ===================================
-        // 8. EXPENSE LOGIC (14-Day Filter)
+        // 9. EXPENSE LOGIC (14-Day Filter)
         // ===================================
         function calculateBalance() {
             const totalBalance = transactions.reduce((acc, trans) => acc + trans.amount, 0);
@@ -1145,8 +1316,9 @@
             }
         }
 
+s
         // ===================================
-        // 9. TO-DO / REMINDER LOGIC
+        // 10. TO-DO / REMINDER LOGIC
         // ===================================
         function renderTasks() {
             todoList.innerHTML = ''; 
@@ -1179,11 +1351,11 @@
                     const icon = task.completed ? 'fa-check-square' : 'fa-regular fa-square';
 
                     li.innerHTML = `
-                        <div class_name="task-content">
+                        <div class_name="task-content" style="display: flex; align-items: center;">
                             <button class="action-btn complete-btn ${completedClass}" onclick="toggleTask(${index})">
                                 <i class="fas ${icon}"></i>
                             </button>
-                            <span>${task.text}</span>
+                            <span style="margin-left: 8px;">${task.text}</span>
                         </div>
                         <button class="action-btn delete-btn" onclick="deleteTask(${index})">
                             <i class="fas fa-trash-alt"></i>
@@ -1221,7 +1393,7 @@
         }
 
         // ===================================
-        // 10. INITIAL PAGE SETUP
+        // 11. INITIAL PAGE SETUP
         // ===================================
         function initDashboard() {
             initTheme(); // Set dark/light mode
