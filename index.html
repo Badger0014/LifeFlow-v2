@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Life Dashboard - V4 FINAL</title>
+    <title>LifeFlow Dashboard - V5 DARK MODE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* --- CORE CSS: Reset and Layout --- */
-        body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #f4f7f9; color: #333; }
+        body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #f4f7f9; color: #333; transition: background-color 0.3s, color 0.3s; }
         .dashboard-container { display: flex; flex-direction: column; min-height: 100vh; }
         
         /* --- HEADER & CURRENCY STYLES --- */
@@ -27,6 +27,7 @@
             justify-content: space-around;
             padding: 10px 0;
             z-index: 1000;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
         .nav-link {
             text-decoration: none;
@@ -54,28 +55,31 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
             margin-bottom: 20px; 
             position: relative;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
-        h2 { color: #2c3e50; font-size: 1.5em; margin-bottom: 15px; }
+        h2 { color: #2c3e50; font-size: 1.5em; margin-bottom: 15px; transition: color 0.3s; }
         
         /* --- FORM/INPUT STYLES --- */
         input[type="text"], input[type="number"], textarea, button { 
             padding: 12px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #dcdfe4; width: calc(100% - 24px); box-sizing: border-box; 
+            background-color: white; color: #333; transition: background-color 0.3s, border-color 0.3s, color 0.3s;
         }
         button { background-color: #3498db; color: white; cursor: pointer; border: none; transition: background-color 0.2s; font-weight: bold; }
         button:hover { background-color: #2980b9; }
 
         /* --- EXPENSE SPECIFIC STYLES --- */
-        .balance-box { text-align: center; margin: 20px 0; padding: 15px; border-radius: 8px; background-color: #ecf0f1; }
+        .balance-box { text-align: center; margin: 20px 0; padding: 15px; border-radius: 8px; background-color: #ecf0f1; transition: background-color 0.3s; }
         #balance-amount { font-size: 2.5em; font-weight: bold; }
         .expense-inputs { display: flex; gap: 10px; }
         .expense-inputs > div { flex: 1; padding: 15px; border-radius: 8px; }
-        #income-box { background-color: #e6f7ee; border: 1px solid #2ecc71; }
-        #expense-box { background-color: #fce7e7; border: 1px solid #e74c3c; }
+        #income-box { background-color: #e6f7ee; border: 1px solid #2ecc71; transition: background-color 0.3s, border-color 0.3s; }
+        #expense-box { background-color: #fce7e7; border: 1px solid #e74c3c; transition: background-color 0.3s, border-color 0.3s; }
         
         /* --- LIST STYLES (To-Do/Transactions) --- */
         .list-group { list-style: none; padding: 0; }
         .list-group li { 
             padding: 12px 0; border-bottom: 1px dotted #e0e6e9; display: flex; justify-content: space-between; align-items: center; 
+            transition: border-bottom 0.3s;
         }
         .negative-amount { color: #e74c3c; font-weight: bold; }
         .positive-amount { color: #2ecc71; font-weight: bold; }
@@ -89,10 +93,107 @@
 
         /* --- NOTES SPECIFIC STYLES --- */
         #notes-list { list-style: none; padding: 0; margin-top: 20px; }
-        .note-preview { padding: 15px; border: 1px solid #e0e6e9; border-radius: 6px; margin-bottom: 10px; cursor: pointer; position: relative; }
+        .note-preview { padding: 15px; border: 1px solid #e0e6e9; border-radius: 6px; margin-bottom: 10px; cursor: pointer; position: relative; transition: background-color 0.3s, border-color 0.3s; }
         .note-preview h3 { margin-top: 0; margin-bottom: 5px; color: #3498db; }
-        .note-preview p { margin: 0; font-size: 0.9em; color: #7f8c8d; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .note-preview p { margin: 0; font-size: 0.9em; color: #7f8c8d; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; transition: color 0.3s; }
         .note-delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #e74c3c; cursor: pointer; }
+
+        /* --- DARK MODE STYLES (NEW) --- */
+        body.dark-mode {
+            background-color: #1e1e2f; 
+            color: #dcdcdc; 
+        }
+        body.dark-mode header {
+            background-color: #2c3e50; /* Keep header dark blue */
+        }
+        body.dark-mode .nav-bar {
+            background-color: #2c3e50; 
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+        }
+        body.dark-mode .nav-link {
+            color: #95a5a6;
+        }
+        body.dark-mode .nav-link.active, body.dark-mode .nav-link:hover {
+            color: #3498db;
+        }
+        body.dark-mode .card {
+            background-color: #252537;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        body.dark-mode h2 {
+            color: #dcdcdc;
+        }
+        body.dark-mode input[type="text"], 
+        body.dark-mode input[type="number"], 
+        body.dark-mode textarea {
+            background-color: #1e1e2f;
+            color: #dcdcdc;
+            border-color: #3e4459;
+        }
+        body.dark-mode .balance-box {
+            background-color: #3e4459;
+        }
+        body.dark-mode #income-box {
+            background-color: #22432d; 
+            border-color: #2ecc71; 
+        }
+        body.dark-mode #expense-box {
+            background-color: #432d2d; 
+            border-color: #e74c3c; 
+        }
+        body.dark-mode .list-group li {
+            border-bottom-color: #3e4459;
+        }
+        body.dark-mode .todo-item.completed span {
+            color: #7f8c8d;
+        }
+        body.dark-mode .note-preview {
+            background-color: #252537;
+            border-color: #3e4459;
+        }
+        body.dark-mode .note-preview p {
+            color: #95a5a6;
+        }
+        /* Toggle Switch Styling (NEW) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 <body>
@@ -117,11 +218,11 @@
                 <h1>👋 Welcome Back!</h1>
                 <p>A quick look at your current status.</p>
                 <div class="home-grid">
-                    <div class="card home-widget" onclick="showTab('Tasks', document.querySelector('.nav-link:nth-child(3)'))">
+                    <div class="card home-widget" onclick="showTab('Tasks', document.querySelector('.nav-link[data-tab-id=\"Tasks\"]'))">
                         <h3><i class="fas fa-check-circle"></i> Tasks Left</h3>
                         <p id="home-task-count" style="font-size: 2em; font-weight: bold;">0</p>
                     </div>
-                    <div class="card home-widget" onclick="showTab('Expenses', document.querySelector('.nav-link:nth-child(2)'))">
+                    <div class="card home-widget" onclick="showTab('Expenses', document.querySelector('.nav-link[data-tab-id=\"Expenses\"]'))">
                         <h3><i class="fas fa-wallet"></i> Current Balance</h3>
                         <p id="home-balance-display" style="font-size: 2em; font-weight: bold;">£0.00</p>
                     </div>
@@ -190,15 +291,37 @@
                         </ul>
                 </div>
             </div>
+            
+            <div id="Settings" class="tab-content">
+                <div class="card">
+                    <h2>🎨 Appearance</h2>
+                    <p style="margin-bottom: 20px;">Toggle dark mode for a low-light experience.</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold;"><i class="fas fa-moon"></i> Dark Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="dark-mode-toggle" onclick="toggleDarkMode()">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>🔒 Account & Backup (Conceptual)</h2>
+                    <p>To enable a full account system, this dashboard would need a **backend server** and a **database** to securely handle login, sign-up, and data syncing. The current version stores all data only on **this browser/device** using Local Storage.</p>
+                    <input type="text" placeholder="Username (e.g., JohnDoe)" disabled>
+                    <input type="password" placeholder="Password" disabled>
+                    <button disabled style="background-color: #95a5a6;">Log In / Register (Requires Server)</button>
+                </div>
+            </div>
 
         </div>
 
         <div class="nav-bar">
-            <a class="nav-link active" onclick="showTab('Home', this)"><i class="fas fa-home"></i>Home</a>
-            <a class="nav-link" onclick="showTab('Expenses', this)"><i class="fas fa-wallet"></i>Expenses</a>
-            <a class="nav-link" onclick="showTab('Tasks', this)"><i class="fas fa-list-check"></i>Tasks</a>
-            <a class="nav-link" onclick="showTab('Notes', this)"><i class="fas fa-book"></i>Notes</a>
-        </div>
+            <a class="nav-link active" data-tab-id="Home" onclick="showTab('Home', this)"><i class="fas fa-home"></i>Home</a>
+            <a class="nav-link" data-tab-id="Expenses" onclick="showTab('Expenses', this)"><i class="fas fa-wallet"></i>Expenses</a>
+            <a class="nav-link" data-tab-id="Tasks" onclick="showTab('Tasks', this)"><i class="fas fa-list-check"></i>Tasks</a>
+            <a class="nav-link" data-tab-id="Notes" onclick="showTab('Notes', this)"><i class="fas fa-book"></i>Notes</a>
+            <a class="nav-link" data-tab-id="Settings" onclick="showTab('Settings', this)"><i class="fas fa-sliders-h"></i>Settings</a> </div>
     </div>
 
     <script>
@@ -210,7 +333,7 @@
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let notes = JSON.parse(localStorage.getItem('notes')) || [];
-        let currentCurrency = localStorage.getItem('currencySymbol') || '£'; // Default to GBP
+        let currentCurrency = localStorage.getItem('currencySymbol') || '£'; 
         const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
         function saveTransactions() { localStorage.setItem('transactions', JSON.stringify(transactions)); }
@@ -232,7 +355,34 @@
         }
 
         // ===================================
-        // 2. TAB NAVIGATION LOGIC
+        // 2. DARK MODE LOGIC (NEW)
+        // ===================================
+        function toggleDarkMode() {
+            const isDark = document.getElementById('dark-mode-toggle').checked;
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+        
+        function loadDarkMode() {
+            const darkModeState = localStorage.getItem('darkMode');
+            const toggle = document.getElementById('dark-mode-toggle');
+
+            if (darkModeState === 'enabled') {
+                document.body.classList.add('dark-mode');
+                toggle.checked = true;
+            } else {
+                document.body.classList.remove('dark-mode');
+                toggle.checked = false;
+            }
+        }
+
+        // ===================================
+        // 3. TAB NAVIGATION LOGIC (UPDATED)
         // ===================================
         function showTab(tabId, clickedElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -243,13 +393,13 @@
             if (clickedElement) {
                 clickedElement.classList.add('active');
             } else {
-                document.querySelector('.nav-link').classList.add('active'); // Activate Home on load
+                document.querySelector(`.nav-link[data-tab-id="${tabId}"]`).classList.add('active');
             }
         }
 
 
         // ===================================
-        // 3. QUICK NOTES (Scratchpad) LOGIC
+        // 4. QUICK NOTES (Scratchpad) LOGIC
         // ===================================
         const quickNotesTextarea = document.getElementById('quick-notes-text');
         
@@ -269,7 +419,7 @@
 
 
         // ===================================
-        // 4. MULTIPLE NOTES LOGIC (New)
+        // 5. MULTIPLE NOTES LOGIC
         // ===================================
         const notesList = document.getElementById('notes-list');
         const noteTitleInput = document.getElementById('note-title');
@@ -277,11 +427,10 @@
 
         function renderNotes() {
             notesList.innerHTML = '';
-            notes.slice().reverse().forEach((note, index) => { // Reverse to show latest first
+            notes.slice().reverse().forEach((note, index) => { 
                 const li = document.createElement('li');
                 li.className = 'note-preview';
                 
-                // Since we reverse, we need to map the rendered index back to the array index
                 const originalIndex = notes.length - 1 - index; 
 
                 li.innerHTML = `
@@ -292,9 +441,7 @@
                     <button class="note-delete-btn" onclick="deleteNote(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
                 `;
                 li.onclick = (e) => {
-                    // Prevent clicking the list item from firing if the trash icon was clicked
                     if (!e.target.closest('.note-delete-btn')) {
-                        // Populate inputs for editing (optional, simple copy here)
                         noteTitleInput.value = note.title;
                         noteBodyTextarea.value = note.body;
                         alert('Note copied to editor. Click "Save Note" to update or save as new.');
@@ -310,7 +457,7 @@
             const body = noteBodyTextarea.value.trim();
 
             if (title && body) {
-                notes.push({ title, body, date: new Date().getTime() }); // Save timestamp
+                notes.push({ title, body, date: new Date().getTime() }); 
                 saveNotes();
                 renderNotes();
                 noteTitleInput.value = '';
@@ -330,7 +477,7 @@
 
 
         // ===================================
-        // 5. EXPENSE LOGIC (14-Day Filter)
+        // 6. EXPENSE LOGIC (14-Day Filter)
         // ===================================
         const balanceAmountDisplay = document.getElementById('balance-amount');
         const homeBalanceDisplay = document.getElementById('home-balance-display');
@@ -338,13 +485,7 @@
 
 
         function calculateBalance() {
-            // Filter transactions to the last 14 days
-            const twoWeeksAgo = new Date().getTime() - TWO_WEEKS_MS;
-            const recentTransactions = transactions.filter(trans => trans.date > twoWeeksAgo);
-
-            const balance = recentTransactions.reduce((acc, trans) => acc + trans.amount, 0);
-            const totalBalance = transactions.reduce((acc, trans) => acc + trans.amount, 0); // Full balance for home display
-
+            const totalBalance = transactions.reduce((acc, trans) => acc + trans.amount, 0); // Full balance for all-time
             const formattedBalance = formatCurrency(totalBalance);
             const signSymbol = totalBalance >= 0 ? '' : '-';
 
@@ -361,15 +502,12 @@
             expenseList.innerHTML = '';
             const twoWeeksAgo = new Date().getTime() - TWO_WEEKS_MS;
             
-            // 1. Filter transactions to include only those within the last 14 days
             const recentTransactions = transactions.filter(trans => trans.date > twoWeeksAgo);
 
-            // 2. Sort by newest first and show the last 10 (most recent within the 14 days)
             recentTransactions.sort((a, b) => b.date - a.date).slice(0, 10).forEach(trans => {
                 const li = document.createElement('li');
                 const amountClass = trans.amount < 0 ? 'negative-amount' : 'positive-amount';
                 
-                // Find original index for deletion (this is complex but necessary when filtering)
                 const originalIndex = transactions.findIndex(t => t.date === trans.date && t.desc === trans.desc && t.amount === trans.amount);
 
 
@@ -389,9 +527,8 @@
         }
 
         function addTransaction(isIncome) {
-            // Existing addTransaction logic, but saving a timestamp now
             let desc, amountValue, amount;
-            const date = new Date().getTime(); // Capture timestamp
+            const date = new Date().getTime(); 
 
             if (isIncome) {
                 desc = document.getElementById('income-desc').value.trim();
@@ -408,7 +545,6 @@
                 saveTransactions();
                 renderTransactions();
                 
-                // Clear inputs
                 document.getElementById('income-desc').value = '';
                 document.getElementById('income-amount').value = '';
                 document.getElementById('expense-desc').value = '';
@@ -429,7 +565,7 @@
 
 
         // ===================================
-        // 6. TO-DO / REMINDER LOGIC
+        // 7. TO-DO / REMINDER LOGIC
         // ===================================
         const todoInput = document.getElementById('todo-input');
         const todoList = document.getElementById('todo-list');
@@ -494,10 +630,10 @@
         }
 
         // ===================================
-        // 7. INITIAL PAGE SETUP
+        // 8. INITIAL PAGE SETUP (UPDATED)
         // ===================================
         function initDashboard() {
-            // Set currency selector based on saved value
+            loadDarkMode(); // Load dark mode status first
             document.getElementById('currency-select').value = currentCurrency;
             
             showTab('Home'); 
