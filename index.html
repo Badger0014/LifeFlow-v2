@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Life Dashboard - V3</title>
+    <title>Personal Life Dashboard - V4 FINAL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* --- CORE CSS: Reset and Layout --- */
@@ -53,7 +53,7 @@
             border-radius: 10px; 
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
             margin-bottom: 20px; 
-            position: relative; /* Needed for absolute positioning of delete buttons */
+            position: relative;
         }
         h2 { color: #2c3e50; font-size: 1.5em; margin-bottom: 15px; }
         
@@ -79,7 +79,7 @@
         }
         .negative-amount { color: #e74c3c; font-weight: bold; }
         .positive-amount { color: #2ecc71; font-weight: bold; }
-        .list-actions { display: flex; align-items: center; } /* Container for delete/complete buttons */
+        .list-actions { display: flex; align-items: center; } 
         .delete-btn, .complete-btn { 
             background: none; border: none; cursor: pointer; font-size: 1em; margin-left: 10px; width: auto; 
         }
@@ -87,14 +87,12 @@
         .complete-btn { color: #2ecc71; }
         .todo-item.completed span { text-decoration: line-through; color: #95a5a6; }
 
-        /* --- CARD DELETE BUTTONS --- */
-        .clear-card-btn { 
-            position: absolute; top: 10px; right: 10px; 
-            background: none; border: none; color: #7f8c8d; 
-            cursor: pointer; font-size: 1.2em; 
-            padding: 5px;
-        }
-        .clear-card-btn:hover { color: #e74c3c; }
+        /* --- NOTES SPECIFIC STYLES --- */
+        #notes-list { list-style: none; padding: 0; margin-top: 20px; }
+        .note-preview { padding: 15px; border: 1px solid #e0e6e9; border-radius: 6px; margin-bottom: 10px; cursor: pointer; position: relative; }
+        .note-preview h3 { margin-top: 0; margin-bottom: 5px; color: #3498db; }
+        .note-preview p { margin: 0; font-size: 0.9em; color: #7f8c8d; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .note-delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #e74c3c; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -130,8 +128,8 @@
                 </div>
                 
                 <div class="card" style="margin-top: 20px;">
-                    <h2>💡 Quick Notes</h2>
-                    <button class="clear-card-btn" onclick="clearNotes('quickNotesText')"><i class="fas fa-trash"></i></button>
+                    <h2>💡 Quick Notes (Scratchpad)</h2>
+                    <button class="clear-card-btn" onclick="clearScratchpad()"><i class="fas fa-trash"></i></button>
                     <textarea id="quick-notes-text" rows="5" placeholder="Temporary scratchpad..."></textarea>
                     <p style="font-size: 0.8em; color: #7f8c8d;">*Text is saved instantly to this note.*</p>
                 </div>
@@ -162,7 +160,7 @@
                 </div>
                 
                 <div class="card">
-                    <h2>Transaction History (Last 10)</h2>
+                    <h2>Transaction History (Last 14 Days)</h2>
                     <ul id="expense-list" class="list-group">
                         </ul>
                 </div>
@@ -178,13 +176,18 @@
                 </div>
             </div>
 
-            <div id="Journal" class="tab-content">
+            <div id="Notes" class="tab-content">
                 <div class="card">
-                    <h2>✍️ Daily Reflection</h2>
-                    <button class="clear-card-btn" onclick="clearNotes('journalText')"><i class="fas fa-trash"></i></button>
-                    <p>Use this space for your journal entries. It saves automatically.</p>
-                    <textarea id="journal-text" rows="15" placeholder="How was your day? What did you accomplish?"></textarea>
-                    <p style="font-size: 0.8em; color: #7f8c8d; text-align: right;">(Saved to your browser's local storage)</p>
+                    <h2>📝 New Note/Journal Entry</h2>
+                    <input type="text" id="note-title" placeholder="Enter a Title for your Note">
+                    <textarea id="note-body" rows="8" placeholder="Write your thoughts, ideas, or log..."></textarea>
+                    <button onclick="addNote()">Save Note</button>
+                </div>
+
+                <div class="card">
+                    <h2>Saved Notes</h2>
+                    <ul id="notes-list">
+                        </ul>
                 </div>
             </div>
 
@@ -194,7 +197,7 @@
             <a class="nav-link active" onclick="showTab('Home', this)"><i class="fas fa-home"></i>Home</a>
             <a class="nav-link" onclick="showTab('Expenses', this)"><i class="fas fa-wallet"></i>Expenses</a>
             <a class="nav-link" onclick="showTab('Tasks', this)"><i class="fas fa-list-check"></i>Tasks</a>
-            <a class="nav-link" onclick="showTab('Journal', this)"><i class="fas fa-book"></i>Journal</a>
+            <a class="nav-link" onclick="showTab('Notes', this)"><i class="fas fa-book"></i>Notes</a>
         </div>
     </div>
 
@@ -206,14 +209,13 @@
         // ===================================
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
         let currentCurrency = localStorage.getItem('currencySymbol') || '£'; // Default to GBP
+        const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
-        function saveTransactions() {
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-        }
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
+        function saveTransactions() { localStorage.setItem('transactions', JSON.stringify(transactions)); }
+        function saveTasks() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+        function saveNotes() { localStorage.setItem('notes', JSON.stringify(notes)); }
 
         // ===================================
         // 1. CURRENCY LOGIC
@@ -222,7 +224,6 @@
             const select = document.getElementById('currency-select');
             currentCurrency = select.value;
             localStorage.setItem('currencySymbol', currentCurrency);
-            // Re-render everything that displays money
             renderTransactions();
         }
 
@@ -236,87 +237,149 @@
         function showTab(tabId, clickedElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-
+            
             document.getElementById(tabId).classList.add('active');
 
             if (clickedElement) {
                 clickedElement.classList.add('active');
             } else {
-                document.querySelector('.nav-link[data-tab="Home"]').classList.add('active');
+                document.querySelector('.nav-link').classList.add('active'); // Activate Home on load
             }
         }
 
-        // Add data-tab attribute to nav links for robust initialization
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.setAttribute('data-tab', link.textContent.split(' ')[0].trim());
-        });
 
         // ===================================
-        // 3. JOURNAL & QUICK NOTES LOGIC
+        // 3. QUICK NOTES (Scratchpad) LOGIC
         // ===================================
-        const journalTextarea = document.getElementById('journal-text');
         const quickNotesTextarea = document.getElementById('quick-notes-text');
         
         // Load text on page load
-        journalTextarea.value = localStorage.getItem('journalText') || '';
         quickNotesTextarea.value = localStorage.getItem('quickNotesText') || '';
 
         // Autosave
-        journalTextarea.addEventListener('input', () => localStorage.setItem('journalText', journalTextarea.value));
         quickNotesTextarea.addEventListener('input', () => localStorage.setItem('quickNotesText', quickNotesTextarea.value));
         
         // Clear function
-        function clearNotes(key) {
-            if (confirm(`Are you sure you want to clear this entire ${key === 'journalText' ? 'Journal' : 'Quick Note'}?`)) {
-                localStorage.removeItem(key);
-                if (key === 'journalText') {
-                    journalTextarea.value = '';
-                } else {
-                    quickNotesTextarea.value = '';
-                }
+        function clearScratchpad() {
+            if (confirm(`Are you sure you want to clear the Quick Notes scratchpad?`)) {
+                localStorage.removeItem('quickNotesText');
+                quickNotesTextarea.value = '';
             }
         }
 
+
         // ===================================
-        // 4. EXPENSE LOGIC
+        // 4. MULTIPLE NOTES LOGIC (New)
         // ===================================
-        const incomeDesc = document.getElementById('income-desc');
-        const incomeAmount = document.getElementById('income-amount');
-        const expenseDesc = document.getElementById('expense-desc');
-        const expenseAmount = document.getElementById('expense-amount');
-        const expenseList = document.getElementById('expense-list');
+        const notesList = document.getElementById('notes-list');
+        const noteTitleInput = document.getElementById('note-title');
+        const noteBodyTextarea = document.getElementById('note-body');
+
+        function renderNotes() {
+            notesList.innerHTML = '';
+            notes.slice().reverse().forEach((note, index) => { // Reverse to show latest first
+                const li = document.createElement('li');
+                li.className = 'note-preview';
+                
+                // Since we reverse, we need to map the rendered index back to the array index
+                const originalIndex = notes.length - 1 - index; 
+
+                li.innerHTML = `
+                    <h3>${note.title}</h3>
+                    <p>
+                        <i class="fas fa-calendar-alt"></i> ${new Date(note.date).toLocaleDateString()} - ${note.body}
+                    </p>
+                    <button class="note-delete-btn" onclick="deleteNote(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
+                `;
+                li.onclick = (e) => {
+                    // Prevent clicking the list item from firing if the trash icon was clicked
+                    if (!e.target.closest('.note-delete-btn')) {
+                        // Populate inputs for editing (optional, simple copy here)
+                        noteTitleInput.value = note.title;
+                        noteBodyTextarea.value = note.body;
+                        alert('Note copied to editor. Click "Save Note" to update or save as new.');
+                    }
+                };
+
+                notesList.appendChild(li);
+            });
+        }
+
+        function addNote() {
+            const title = noteTitleInput.value.trim();
+            const body = noteBodyTextarea.value.trim();
+
+            if (title && body) {
+                notes.push({ title, body, date: new Date().getTime() }); // Save timestamp
+                saveNotes();
+                renderNotes();
+                noteTitleInput.value = '';
+                noteBodyTextarea.value = '';
+            } else {
+                alert('Both a Title and a Note Body are required.');
+            }
+        }
+
+        function deleteNote(index) {
+            if (confirm('Are you sure you want to delete this note permanently?')) {
+                notes.splice(index, 1);
+                saveNotes();
+                renderNotes();
+            }
+        }
+
+
+        // ===================================
+        // 5. EXPENSE LOGIC (14-Day Filter)
+        // ===================================
         const balanceAmountDisplay = document.getElementById('balance-amount');
         const homeBalanceDisplay = document.getElementById('home-balance-display');
+        const expenseList = document.getElementById('expense-list');
+
 
         function calculateBalance() {
-            const balance = transactions.reduce((acc, trans) => acc + trans.amount, 0);
-            const formattedBalance = formatCurrency(balance);
-            const signSymbol = balance >= 0 ? '' : '-';
+            // Filter transactions to the last 14 days
+            const twoWeeksAgo = new Date().getTime() - TWO_WEEKS_MS;
+            const recentTransactions = transactions.filter(trans => trans.date > twoWeeksAgo);
 
+            const balance = recentTransactions.reduce((acc, trans) => acc + trans.amount, 0);
+            const totalBalance = transactions.reduce((acc, trans) => acc + trans.amount, 0); // Full balance for home display
+
+            const formattedBalance = formatCurrency(totalBalance);
+            const signSymbol = totalBalance >= 0 ? '' : '-';
+
+            // Update Total Balance Display
             balanceAmountDisplay.textContent = signSymbol + formattedBalance;
-            balanceAmountDisplay.className = balance >= 0 ? 'positive-amount' : 'negative-amount';
+            balanceAmountDisplay.className = totalBalance >= 0 ? 'positive-amount' : 'negative-amount';
             
             // Update Home Widget
             homeBalanceDisplay.textContent = signSymbol + formattedBalance;
-            homeBalanceDisplay.style.color = balance >= 0 ? '#2ecc71' : '#e74c3c';
-
-            return balance;
+            homeBalanceDisplay.style.color = totalBalance >= 0 ? '#2ecc71' : '#e74c3c';
         }
 
         function renderTransactions() {
             expenseList.innerHTML = '';
-            transactions.slice(-10).reverse().forEach((trans, index) => { // Show last 10
+            const twoWeeksAgo = new Date().getTime() - TWO_WEEKS_MS;
+            
+            // 1. Filter transactions to include only those within the last 14 days
+            const recentTransactions = transactions.filter(trans => trans.date > twoWeeksAgo);
+
+            // 2. Sort by newest first and show the last 10 (most recent within the 14 days)
+            recentTransactions.sort((a, b) => b.date - a.date).slice(0, 10).forEach(trans => {
                 const li = document.createElement('li');
-                const sign = trans.amount < 0 ? '' : '+'; // No sign for expenses as they are styled
                 const amountClass = trans.amount < 0 ? 'negative-amount' : 'positive-amount';
                 
-                // Calculate original index to allow deletion from transactions array
-                const originalIndex = transactions.length - 1 - index;
+                // Find original index for deletion (this is complex but necessary when filtering)
+                const originalIndex = transactions.findIndex(t => t.date === trans.date && t.desc === trans.desc && t.amount === trans.amount);
+
 
                 li.innerHTML = `
-                    <span>${trans.desc}</span>
+                    <span>
+                        ${trans.desc} 
+                        <span style="font-size:0.8em; color:#95a5a6;">(${new Date(trans.date).toLocaleDateString()})</span>
+                    </span>
                     <div class="list-actions">
-                        <span class="${amountClass}">${sign}${formatCurrency(trans.amount)}</span>
+                        <span class="${amountClass}">${formatCurrency(trans.amount)}</span>
                         <button class="delete-btn" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 `;
@@ -326,30 +389,31 @@
         }
 
         function addTransaction(isIncome) {
+            // Existing addTransaction logic, but saving a timestamp now
             let desc, amountValue, amount;
+            const date = new Date().getTime(); // Capture timestamp
 
             if (isIncome) {
-                desc = incomeDesc.value.trim();
-                amountValue = parseFloat(incomeAmount.value);
+                desc = document.getElementById('income-desc').value.trim();
+                amountValue = parseFloat(document.getElementById('income-amount').value);
                 amount = Math.abs(amountValue);
             } else {
-                desc = expenseDesc.value.trim();
-                amountValue = parseFloat(expenseAmount.value);
+                desc = document.getElementById('expense-desc').value.trim();
+                amountValue = parseFloat(document.getElementById('expense-amount').value);
                 amount = -1 * Math.abs(amountValue);
             }
 
             if (desc && !isNaN(amountValue) && amountValue > 0) {
-                transactions.push({ desc, amount, date: new Date().toLocaleDateString() });
+                transactions.push({ desc, amount, date });
                 saveTransactions();
                 renderTransactions();
                 
-                if (isIncome) {
-                    incomeDesc.value = '';
-                    incomeAmount.value = '';
-                } else {
-                    expenseDesc.value = '';
-                    expenseAmount.value = '';
-                }
+                // Clear inputs
+                document.getElementById('income-desc').value = '';
+                document.getElementById('income-amount').value = '';
+                document.getElementById('expense-desc').value = '';
+                document.getElementById('expense-amount').value = '';
+
             } else {
                 alert('Please enter a valid description and a positive amount.');
             }
@@ -359,13 +423,13 @@
             if (confirm('Are you sure you want to delete this transaction?')) {
                 transactions.splice(index, 1);
                 saveTransactions();
-                renderTransactions(); // Re-render to update the list and balance
+                renderTransactions();
             }
         }
 
 
         // ===================================
-        // 5. TO-DO / REMINDER LOGIC
+        // 6. TO-DO / REMINDER LOGIC
         // ===================================
         const todoInput = document.getElementById('todo-input');
         const todoList = document.getElementById('todo-list');
@@ -380,7 +444,6 @@
                 const li = document.createElement('li');
                 li.className = task.completed ? 'todo-item completed' : 'todo-item';
                 
-                // Toggle and Task Text
                 const contentDiv = document.createElement('div');
                 contentDiv.style.display = 'flex';
                 contentDiv.style.alignItems = 'center';
@@ -397,7 +460,6 @@
                 contentDiv.appendChild(span);
                 li.appendChild(contentDiv);
                 
-                // Delete Button
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
                 deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
@@ -427,12 +489,12 @@
         function deleteTask(index) {
             if (confirm('Are you sure you want to delete this task/reminder?')) {
                 tasks.splice(index, 1);
-                renderTasks(); // Re-render to update the list
+                renderTasks();
             }
         }
 
         // ===================================
-        // 6. INITIAL PAGE SETUP
+        // 7. INITIAL PAGE SETUP
         // ===================================
         function initDashboard() {
             // Set currency selector based on saved value
@@ -441,6 +503,7 @@
             showTab('Home'); 
             renderTransactions();
             renderTasks();
+            renderNotes();
         }
 
         window.onload = initDashboard;
