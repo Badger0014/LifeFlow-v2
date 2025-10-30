@@ -91,14 +91,14 @@
         /* --- 4. HEADER --- */
         header {
             background-color: var(--color-bg-secondary);
-            padding: 20px;
+            padding: 15px 20px; /* MOD: Reduced vertical padding */
             border-bottom: 1px solid var(--color-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         header h1 {
-            font-size: 1.5em;
+            font-size: 1.3em; /* MOD: Reduced font size */
             margin-bottom: 0;
             color: var(--color-accent);
         }
@@ -107,7 +107,7 @@
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px; /* MOD: Reduced gap */
         }
         
         /* Currency Selector */
@@ -237,18 +237,14 @@
             position: relative;
             border: 1px solid var(--color-border);
         }
-        .clear-card-btn {
+        
+        /* MOD: Replaced .clear-card-btn with a positioning helper */
+        .card-action-top-right {
             position: absolute;
             top: 15px;
             right: 15px;
-            background: none;
-            border: none;
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: color 0.2s;
+            z-index: 2;
         }
-        .clear-card-btn:hover { color: var(--color-danger); }
 
         /* --- 8. FORMS & INPUTS --- */
         input[type="text"], input[type="number"], textarea, select {
@@ -468,14 +464,18 @@
         .positive-amount { color: var(--color-success); font-weight: 600; }
         
         .list-actions { display: flex; align-items: center; gap: 10px; }
+        
+        /* MOD: Unified all action buttons */
         .action-btn {
             background: none; border: none; cursor: pointer;
             font-size: 1.1em; padding: 5px; width: auto; margin-bottom: 0;
             color: var(--color-text-secondary);
             transition: color 0.2s, transform 0.2s;
+            z-index: 2; /* Ensures it's clickable on note items */
         }
         .action-btn:hover { transform: scale(1.1); }
         .delete-btn:hover { color: var(--color-danger); }
+        
         .complete-btn { font-size: 1.4em; }
         .complete-btn.completed { color: var(--color-success); }
         .complete-btn.pending { color: var(--color-text-secondary); }
@@ -519,13 +519,8 @@
             font-weight: 400;
             color: var(--color-text-secondary);
         }
-        .note-delete-btn {
-            background: none; border: none; color: var(--color-text-secondary);
-            cursor: pointer; font-size: 1em; padding: 5px;
-            transition: color 0.2s;
-            z-index: 2; /* Be on top of the li click */
-        }
-        .note-delete-btn:hover { color: var(--color-danger); }
+        
+        /* MOD: Removed .note-delete-btn styles, now uses .action-btn */
         
         /* --- 10. MODAL (for Notes) --- */
         .modal {
@@ -651,7 +646,8 @@
 
     </style>
 </head>
-<body data-theme="light"> <div class="dashboard-container">
+<body data-theme="light">
+    <div class="dashboard-container">
         
         <nav class="sidebar">
             <div class="sidebar-header">
@@ -666,7 +662,8 @@
 
         <main>
             <header>
-                <h1><i class="fas fa-wave-pulse"></i> LifeFlow</h1> <div class="header-controls">
+                <h1><i class="fas fa-wave-pulse"></i> LifeFlow</h1>
+                <div class="header-controls">
                     <div class="currency-selector">
                         <select id="currency-select" onchange="updateCurrencySymbol()">
                             <option value="$">USD ($)</option>
@@ -701,21 +698,21 @@
                     <div class="card">
                         <h2><i class="fas fa-clipboard-list"></i> Upcoming Tasks</h2>
                         <ul id="home-tasks-list" class="home-summary-list">
-                            </ul>
+                        </ul>
                         <p id="home-tasks-empty" class="empty-state" style="display: none;">You're all caught up! 🎉</p>
                     </div>
 
                     <div class="card">
                         <h2><i class="fas fa-exchange-alt"></i> Recent Transactions</h2>
                         <ul id="home-transactions-list" class="home-summary-list">
-                            </ul>
+                        </ul>
                          <p id="home-transactions-empty" class="empty-state" style="display: none;">No recent transactions.</p>
                     </div>
 
                     <div class="card">
                         <h2>💡 Quick Notes (Scratchpad)</h2>
-                        <button class="clear-card-btn" onclick="clearScratchpad()" title="Clear Scratchpad">
-                            <i class="fas fa-trash"></i>
+                        <button class="action-btn delete-btn card-action-top-right" onclick="clearScratchpad()" title="Clear Scratchpad">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                         <textarea id="quick-notes-text" rows="5" placeholder="Temporary scratchpad... text is saved instantly."></textarea>
                     </div>
@@ -748,7 +745,7 @@
                     <div class="card">
                         <h2>Transaction History (Last 14 Days)</h2>
                         <ul id="expense-list" class="list-group">
-                            </ul>
+                        </ul>
                         <p id="expense-empty" class="empty-state" style="display: none;">No transactions in the last 14 days.</p>
                     </div>
                 </div>
@@ -780,7 +777,7 @@
                         <p id="task-progress-text">0/0 tasks completed</p>
 
                         <ul id="todo-list" class="list-group">
-                            </ul>
+                        </ul>
                         <p id="tasks-empty" class="empty-state" style="display: none;">No tasks yet. Add one above!</p>
                     </div>
                 </div>
@@ -796,7 +793,7 @@
                     <div class="card">
                         <h2>Saved Notes</h2>
                         <ul id="notes-list">
-                            </ul>
+                        </ul>
                         <p id="notes-empty" class="empty-state" style="display: none;">You haven't saved any notes yet.</p>
                     </div>
                 </div>
@@ -1149,19 +1146,20 @@
                     const li = document.createElement('li');
                     li.className = 'note-preview';
                     
+                    // MOD: Updated button to use .action-btn.delete-btn
                     li.innerHTML = `
                         <div>
                             <h3>${note.title}</h3>
                             <p>${new Date(note.date).toLocaleDateString()} - ${note.body}</p>
                         </div>
-                        <button class="note-delete-btn" onclick="deleteNote(event, ${originalIndex})">
+                        <button class="action-btn delete-btn" onclick="deleteNote(event, ${originalIndex})">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     `;
                     
                     li.addEventListener('click', (e) => {
                         // Only open modal if the delete button wasn't clicked
-                        if (!e.target.closest('.note-delete-btn')) {
+                        if (!e.target.closest('.delete-btn')) {
                             openNoteModal(originalIndex);
                         }
                     });
@@ -1316,7 +1314,6 @@
             }
         }
 
-s
         // ===================================
         // 10. TO-DO / REMINDER LOGIC
         // ===================================
@@ -1350,8 +1347,9 @@ s
                     const completedClass = task.completed ? 'completed' : 'pending';
                     const icon = task.completed ? 'fa-check-square' : 'fa-regular fa-square';
 
+                    // MOD: Fixed class_name typo
                     li.innerHTML = `
-                        <div class_name="task-content" style="display: flex; align-items: center;">
+                        <div class="task-content" style="display: flex; align-items: center;">
                             <button class="action-btn complete-btn ${completedClass}" onclick="toggleTask(${index})">
                                 <i class="fas ${icon}"></i>
                             </button>
